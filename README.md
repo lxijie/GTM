@@ -1,3 +1,5 @@
+GTM: GENERAL TIME-SERIES MODEL FOR UNIVERSAL KNOWLEDGE REPRESENTATION OF MULTIVARIATE TIME-SERIES DATA
+
 Universal knowledge representation is a central problem for multivariate time series(MTS) foundation
 models and yet remains open. This paper investigates this problem from the first principle and it makes
 four folds of contributions. First, a new empirical finding is revealed: time series with different time
