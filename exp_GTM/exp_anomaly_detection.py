@@ -1,5 +1,3 @@
-import sys
-sys.path.append('/home/dmz-ai/lxj')
 from FNOformer.data_provider.data_factory import data_provider
 from FNOformer.utils.tools import EarlyStopping, adjust_learning_rate, visual
 from sklearn.metrics import precision_recall_fscore_support,accuracy_score
