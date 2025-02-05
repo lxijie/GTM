@@ -12,5 +12,7 @@ for the first time, leading to a generative tasks agnostic pre-training strategy
 MTS foundation model is built, addressing the limitation that contemporary time series models
 often require token, pre-training, or model-level customizations for downstream tasks adaption.
 Fourth, extensive experiments show that GTM outperforms state-of-the-art (SOTA) methods across
-all generative tasks, including long-term forecasting, anomaly det
+all generative tasks, including long-term forecasting, anomaly detection, and imputation. We will
+publicly release the code and models in the camera-ready version.
 
+The pre trained model can be obtained through the following address: ([URL](https://huggingface.co/liangxj/GTM))
