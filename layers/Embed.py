@@ -27,16 +27,13 @@ class PositionalEmbedding(nn.Module):
     def forward(self,pos_1,pos_2=None):
         if pos_2 is None:
             return self.position_embedding_1(pos_1)
-        #将位置-1，即从0开始，其中padding部分为-1
         pos_1 -=1
         pos_2 -=1
         padding_mask_1 = pos_1 != -1
         padding_mask_2 = pos_2 != -1
-        #先将padding-1部分置为0，用于取出位置编码
         valid_positions_1 = torch.where(padding_mask_1, pos_1, torch.tensor(0))
         valid_positions_2 = torch.where(padding_mask_2, pos_2, torch.tensor(0))
         pos_embed_1 = self.position_embedding_1(valid_positions_1)
-        #将padding部分位置编码重新置为0
         pos_embed_1[~padding_mask_1] = 0
         pos_embed_2 = self.position_embedding_2(valid_positions_2)
         pos_embed_2[~padding_mask_2] = 0
@@ -211,11 +208,6 @@ class PatchEmbedding(nn.Module):
         # self.device = config.device
         # Positional embedding
         self.position_embedding = PositionalEmbedding(d_model)
-        # self.time_embedding = {
-        #                         "minute":nn.Parameter(torch.randn(d_model)).cuda(),
-        #                         "hour": nn.Parameter(torch.randn(d_model)).cuda(),
-        #                         "day":nn.Parameter(torch.randn(d_model).cuda())
-        #                     }
         self.mask_embedding = torch.nn.Parameter(torch.randn(1, patch_len))
         self.Mask=GLMMaskProcessor4TSGPU(mask_ratio=0.3)
         # Residual dropout
@@ -239,7 +231,6 @@ class PatchEmbedding(nn.Module):
             for i in range(len(data_dict['input_patches'])):
                 mask_x[i, data_dict['mask_pos'][i]] = self.mask_embedding
             # mask_x = data_dict['input_patches']*(1-data_dict['mask_ids'].unsqueeze(-1).expand(-1,-1,x.shape[-1]))
-            #将start—token加入输入中
             mask_x[data_dict['start_token_indices']] = self.start_token
             x = self.value_embedding(mask_x) +position
             atten_mask = data_dict['attention_masks']
@@ -258,7 +249,6 @@ class PatchEmbedding(nn.Module):
             # x = torch.cat((x,padding_patch_2), dim=1)
             # mask_matrix = torch.ones((x.shape[1], x.shape[1]), dtype=torch.bool).to(x.device)
             # mask_matrix[:self.config.seq_len//self.patch_len+1,self.config.seq_len//self.patch_len+1:]=False
-            # # 填充下三角矩阵（从A+1行开始）
             # for i in range(x.shape[1]-padding_patch_2.shape[1], x.shape[1]):
             #     for j in range(i,x.shape[1]):
             #         mask_matrix[i, j] = False
@@ -274,34 +264,16 @@ class PatchEmbedding(nn.Module):
             return self.dropout(x),n_vars
 
     def random_mask(self,sequence, mask_prob=0.3):
-        """
-        对时间序列在时间轴上进行随机掩码。
-
-        参数:
-        - sequence (torch.Tensor): 输入的时间序列，形状为 (batch_size, sequence_length, feature_dim)。
-        - mask_prob (float): 掩码的概率，即掩盖的比例。
-
-        返回:
-        - masked_sequence (torch.Tensor): 应用掩码后的时间序列。
-        - mask (torch.Tensor): 掩码张量，形状与输入序列的时间轴相同。
-        """
         batch_size, seq_length, feature_dim = sequence.shape
 
-        # 初始化掩码为全0
         mask = torch.zeros(batch_size, seq_length).cuda()
 
-        # 确保每个样本都精确地掩盖了30%的时间点
         num_masked = int(mask_prob * seq_length)
 
         for i in range(batch_size):
-            # 为每个样本随机选择需要掩码的时间点索引
             mask_indices = torch.randperm(seq_length)[:num_masked]
             mask[i, mask_indices] = 1
-
-        # 扩展掩码的维度以匹配输入序列的形状
         mask = mask.unsqueeze(-1).expand(-1, -1, feature_dim)
-
-        # 应用掩码
         masked_sequence = sequence * (1 - mask)
 
         return masked_sequence, mask
