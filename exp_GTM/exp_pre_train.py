@@ -38,9 +38,7 @@ class Exp_Long_Term_Forecast():
         if self.args.data != 'utsd':
             model_parameters = torch.load(self.args.pre_train_model_path)
             new_state_dict = OrderedDict()
-            # 遍历当前的模型参数并修改键
             for key, value in model_parameters.items():
-                # 去掉参数名称前的所有 'module.module.'
                 # if 'head.weight' in new_state_dict:
                 #     del new_state_dict['head.weight']
                 # if 'head.bias' in new_state_dict:
@@ -178,18 +176,11 @@ class Exp_Long_Term_Forecast():
             model_parameters = torch.load(os.path.join(''))
 
             new_state_dict = OrderedDict()
-        #     # 遍历当前的模型参数并修改键
             for key, value in model_parameters.items():
-                # 所有参数名称前加上 'module.module.'
-                new_key = 'module.'+key
                 new_state_dict[new_key] = value.to(self.args.device)
             self.model_parallel.load_state_dict(new_state_dict)
 
         # for key, value in self.model.named_parameters():
-        #     # 去掉参数名称前的所有 'module.module.'
-        #
-        #     # 打印参数名称和其所在的 GPU
-        #     print(f'Parameter: {key}, GPU: {value.get_device()}')  # 打印参数所在的 GPU
         preds = []
         trues = []
         folder_path = './test_results/' + setting + '/'
