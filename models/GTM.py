@@ -88,9 +88,8 @@ class Model(nn.Module):
         x = x.permute(0, 2, 1)
         if self.pred_len>self.seq_len:
             pred_mask_len = ((self.pred_len-self.seq_len)// self.patch_len+1) * self.patch_len if self.pred_len % self.patch_len != 0 else self.pred_len - self.seq_len
-        # 检查 pred_mask_len 是否大于 0
             if pred_mask_len > 0:
-                pred_mask = torch.zeros(B, C, pred_mask_len, device=x.device)  # 直接在目标设备上创建
+                pred_mask = torch.zeros(B, C, pred_mask_len, device=x.device)  
                 x = torch.concat((x, pred_mask), dim=2)
         # u: [bs * nvars x patch_num x d_model]
         dec_in,n_vars= self.patch_embedding(x)
@@ -188,7 +187,6 @@ class Model(nn.Module):
         # Decoder
         dec_out = self.head(dec_out)  # z: [bs x nvars x target_window]
 
-        #将end_token位置掩掉，不进行损失计算
         mask_index = torch.where(end_token_indices, False, mask_id)
         mask_index = torch.reshape(mask_index, (B, C, dec_out.shape[-2]))
         mask_index =mask_index.unsqueeze(-1).expand(-1, -1, -1, self.patch_len)
@@ -212,7 +210,6 @@ class Model(nn.Module):
 
     def forward(self, x_enc, time_gra,mask=None):
         if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast':
-            #掩码预测
             dec_out = self.forecast(x_enc,time_gra)
             return dec_out  # [B, N]
         if self.task_name == 'imputation':
