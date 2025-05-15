@@ -255,13 +255,13 @@ class GLMMaskProcessor4TS(BaseMaskProcessor):
                 continue
             new_mask_count = mask_count + (end_pos - start_pos)
             if new_mask_count > total_to_mask:
-                continue  # 如果超过，则不执行当前掩码操作
+                continue  
             # mask
             spans_list.append((start_pos, end_pos))
             mask_count += end_pos - start_pos
-        # 得到掩码总长
+      
         all_span_len = sum([end_pos - start_pos for start_pos, end_pos in spans_list])
-        # 得到已知序列长度
+
         part_A_len = (seq_len + len(spans_list)) - all_span_len
         part_B_len = all_span_len
         new_L = part_A_len + part_B_len
@@ -393,7 +393,6 @@ class GLMMaskProcessor4TSGPU(BaseMaskProcessor):
     >>> d = [p1, p2, p3, p4, p5, p6]
     >>> masked_input = [p1, <M>, p4, <M>, <s>, p5, p6, <s>, p2, p3]
     >>> masked_output = [p1, <M>, p4, <M>, p5, p6, <e>, p2, p3, <e>]
-    >>> # 以下三个indices用于来替换可学的mask token/start token/end token，如使用torch.where()
     >>> start_token_indices = [False, False, False, False, True, False, False, True, False, False]
     >>> end_token_indices = [False, False, False, False, False, False, True, False, False, True]
     >>> mask_token_indices = [False, True, False, True, False, False, False, False, False, False]
@@ -407,7 +406,6 @@ class GLMMaskProcessor4TSGPU(BaseMaskProcessor):
     >>>     1, 1, 1, 1, 1, 1, 0, 0,
     >>>     1, 1, 1, 1, 1, 1, 1, 0,
     >>>     1, 1, 1, 1, 1, 1, 1, 1,
-    >>> ]]#应该为加入start token后的attention masks
     >>> position_ids_1 = [1,2,3,4,4,4,2,2]
     >>> position_ids_2 = [0,0,0,0,1,2,1,2]
     """
@@ -419,7 +417,7 @@ class GLMMaskProcessor4TSGPU(BaseMaskProcessor):
     @staticmethod
     def _detect_overlap(start, end, spans_list):
         for span_s, span_e in spans_list:
-            if (span_s <= end and span_e >= start):  # 检查是否有重叠
+            if (span_s <= end and span_e >= start):
                 return True
         return False
 
@@ -447,13 +445,13 @@ class GLMMaskProcessor4TSGPU(BaseMaskProcessor):
                     continue
                 new_mask_count = mask_count + (end_pos - start_pos)
                 if new_mask_count > total_to_mask:
-                    continue  # 如果超过，则不执行当前掩码操作
-                # mask
+                    continue 
+
                 spans_list.append((start_pos, end_pos))
                 mask_count += end_pos - start_pos
-        # 得到掩码总长
+
         all_span_len = sum([end_pos - start_pos for start_pos, end_pos in spans_list])
-        # 得到已知序列长度
+
         part_A_len = (seq_len + len(spans_list)) - all_span_len
         part_B_len = all_span_len
         if add_start_end_token:
