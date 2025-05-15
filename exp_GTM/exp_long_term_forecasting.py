@@ -16,7 +16,6 @@ import json
 import matplotlib.pyplot as plt
 from GTM.models import GTM
 from collections import OrderedDict
-# from utils.augmentation import run_augmentation,run_augmentation_single
 os.environ['MASTER_PORT'] = '29501'
 
 warnings.filterwarnings('ignore')
@@ -41,9 +40,7 @@ class Exp_Long_Term_Forecast():
         if self.args.data != 'utsd':
             model_parameters = torch.load(self.args.pretrain_model_path)
             new_state_dict = OrderedDict()
-            # 遍历当前的模型参数并修改键
             for key, value in model_parameters.items():
-                # 去掉参数名称前的所有 'module.module.'
                 # if 'head.weight' in new_state_dict:
                 #     del new_state_dict['head.weight']
                 # if 'head.bias' in new_state_dict:
@@ -182,9 +179,8 @@ class Exp_Long_Term_Forecast():
             model_parameters = torch.load('')
 
             new_state_dict = OrderedDict()
-        #     # 遍历当前的模型参数并修改键
+
             for key, value in model_parameters.items():
-                # 所有参数名称前加上 'module.module.'
                 new_key = 'module.'+key
                 new_state_dict[new_key] = value.to(self.args.device)
             self.model_parallel.load_state_dict(new_state_dict)
