@@ -1,9 +1,9 @@
-from FNOformer.data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_M4, PSMSegLoader, \
+from data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_M4, PSMSegLoader, \
     MSLSegLoader, SMAPSegLoader, SMDSegLoader, SWATSegLoader,Dataset_weather,\
     Dataset_traffic,Dataset_elc
 # from data_provider.uea import collate_fn
 from torch.utils.data import DataLoader
-from FNOformer.data_provider.utsdataset import UTSDataset
+from data_provider.utsdataset import UTSDataset
 
 data_dict = {
     'ETTh1': Dataset_ETT_hour,
