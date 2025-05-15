@@ -195,7 +195,7 @@ class Dataset_ETT_minute(Dataset):
 
 class Dataset_weather(Dataset):
     def __init__(self,
-                 root_path="/home/liangxijie1/DMLoRA/dataset/weather",
+                 root_path="",
                  flag="train",
                  size=None,
                  features="M",
@@ -292,7 +292,7 @@ class Dataset_weather(Dataset):
 
 class Dataset_elc(Dataset):
     def __init__(self,
-                 root_path="/home/liangxijie1/DMLoRA/dataset/electricity",
+                 root_path="",
                  flag="train",
                  size=None,
                  features="M",
@@ -389,7 +389,7 @@ class Dataset_elc(Dataset):
 class Dataset_traffic(Dataset):
     def __init__(
             self,
-            root_path="/data/liangxijie/DMLoRA/dataset/traffic",
+            root_path="",
             flag="train",
             size=None,
             features="M",
