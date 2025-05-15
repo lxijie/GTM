@@ -11,9 +11,6 @@ import numpy as np
 os.environ["CUDA_VISIBLE_DEVICES"]="0,1,2,3,4,5,6,7"
 
 os.environ['DEEPSPEED_CONFIG'] = '{"ports":{"master_port":29501}}'
-# local_env = os.environ.copy()
-# local_env["PATH"]="/home/dmz-ai/miniconda3/envs/lpy/bin:" + local_env["PATH"]
-# os.environ.update(local_env)
 if __name__ == '__main__':
     fix_seed = 2025
     random.seed(fix_seed)
@@ -165,15 +162,12 @@ if __name__ == '__main__':
                     args.d_ff,
                     args.learning_rate,
                     args.batch_size)
-                # print('parameters：',sum(p.numel() for p in Exp.model.parameters()))
                 print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
                 Exp.train(setting)
 
                 print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
                 Exp.test(setting)
                 torch.cuda.empty_cache()
-                # if 'pre_train' in args.task_name:
-                #     break
     else:
         for args.pred_len in [96]:
             Exp = Exp_Long_Term_Forecast(args)
