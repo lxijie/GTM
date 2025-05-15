@@ -7,7 +7,7 @@ import torch.nn.functional as F
 import numpy as np
 import math
 from math import sqrt
-from FNOformer.utils.masking import TriangularCausalMask, ProbMask
+from utils.masking import TriangularCausalMask, ProbMask
 import os
 
 
