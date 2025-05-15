@@ -11,7 +11,6 @@ os.environ["HF_DATASETS_PROGRESS_BARS"] = "0"
 def convert_freq(freq):
     temp = freq
     freq = freq.resolution_string
-    # 动态判断频率的合适单位
     if freq == 'ms' or 'us' or 'ns':
         gra = round(temp.value / 1000 / 1000)
         freq = 'ms'
@@ -24,21 +23,20 @@ def convert_freq(freq):
     elif freq.lower() == 's':
         gra = round(temp.value /1000 / 1000 / 1000)
 
-    # 自动进位
     while (freq == 'ms' and gra > 999):
-        gra = round(gra / 1000)  # 进位到秒
+        gra = round(gra / 1000) 
         freq = 's'
 
     while (freq == 's' and gra > 999):
-        gra = round(gra / 60)  # 进位到分钟
+        gra = round(gra / 60) 
         freq = 't'
 
     while (freq == 't' and gra >= 60):
-        gra = round(gra / 60)  # 进位到小时
+        gra = round(gra / 60)
         freq = 'h'
 
     while (freq == 'h' and gra >= 24):
-        gra = round(gra / 24)  # 进位到天
+        gra = round(gra / 24)
         freq = 'd'
 
     return freq, gra
@@ -89,11 +87,10 @@ class prepareUTSD():
         print('Indexing dataset...')
         train_set, val_set, test_set = [], [], []
         train_n_window_list, val_n_window_list, test_n_window_list = [], [], []
-        # dataset = dataset.select(range(90000,90100))
-        for item in dataset: # 数据集中已经分离多变量
+        for item in dataset: 
             self.scaler = StandardScaler()
-            freq = item['freq'] # 当前数据的freq
-            data = item['target'] # 当前数据
+            freq = item['freq'] 
+            data = item['target'] 
             start = item['start']
             end = item['end']
             data = np.array(data).reshape(-1, 1)
@@ -104,7 +101,7 @@ class prepareUTSD():
             border2s = [num_train, num_train + num_val, len(data)]
 
             if self.scale:
-                train_data = data[border1s[0]:border2s[0]] # 0: 806
+                train_data = data[border1s[0]:border2s[0]]
                 self.scaler.fit(train_data)
                 data = self.scaler.transform(data)
 
@@ -114,10 +111,9 @@ class prepareUTSD():
 
             def process_data(data, item_id,start, end, freq, split_name, n_window_list):
                 n_window = (len(data) - self.seq_len - self.output_len) // self.stride + 1
-                if n_window < 1: # 不能生成完整序列，跳过数据项
+                if n_window < 1:
                     return None, n_window_list
-
-                # 累积窗口数量
+                    
                 if len(n_window_list) == 0:
                     n_window_list.append(n_window)
                 else:
@@ -145,7 +141,7 @@ class prepareUTSD():
                 }, n_window_list
                 # self.freq_list.append(freq)
                 # self.data_list.append(data)
-                # self.n_window_list.append(n_window if len(self.n_window_list) == 0 else self.n_window_list[-1] + n_window) # 累积窗口数量
+                # self.n_window_list.append(n_window if len(self.n_window_list) == 0 else self.n_window_list[-1] + n_window) 
             train_item, train_n_window_list = process_data(data[border1s[0]:border2s[0]],item['item_id'], start, end, freq, 'train', train_n_window_list)
             val_item, val_n_window_list = process_data(data[border1s[1]:border2s[1]], item['item_id'],start, end, freq, 'val', val_n_window_list)
             test_item, test_n_window_list = process_data(data[border1s[2]:border2s[2]],item['item_id'], start, end, freq, 'test', test_n_window_list)
@@ -157,11 +153,10 @@ class prepareUTSD():
             if test_item:
                 test_set.append(test_item)
 
-            # 将 train_n_window_list 添加到 train_set 中
         train_set_dict = {
             'data_list': [item['data_list'] for item in train_set],
             'freq_list': [item['freq_list'] for item in train_set],
-            'n_window_list': train_n_window_list,  # 添加整个窗口列表
+            'n_window_list': train_n_window_list,
             'time_gra': [item['time_gra'] for item in train_set]
         }
 
@@ -220,77 +215,14 @@ class UTSDataset(Dataset):
         self.freq_list = data['freq_list']
         self.time_gra = data['time_gra']
         self.n_window_list = data['n_window_list']
-        # dataset = dataset
-        # dataset = datasets.load_from_disk(self.root_path)
-        # # # dataset = datasets.load_dataset("thuml/UTSD", self.subset_name, split='train')
-        # # # split='train' contains all the time series, which have not been divided into splits, 
-        # # # you can split them by yourself, or use our default split as train:val = 9:1
-        # print('Indexing dataset...')
-        # for item in tqdm(dataset): # 数据集中已经分离多变量
-        #     self.scaler = StandardScaler()
-        #     freq = item['freq'] # 当前数据的freq
-        #     data = item['target'] # 当前数据
-        #     start = item['start']
-        #     end = item['end']
-        #     data = np.array(data).reshape(-1, 1)
-        #     num_train = int(len(data) * self.split[0])
-        #     num_val = int(len(data) * self.split[1])
-        #     num_test = int(len(data) * self.split[2])
-        #     border1s = [0, num_train - self.seq_len, num_train + num_val-self.seq_len]
-        #     border2s = [num_train, num_train + num_val, len(data)]
-
-        #     border1 = border1s[self.set_type]
-        #     border2 = border2s[self.set_type]
-
-        #     if self.scale:
-        #         train_data = data[border1s[0]:border2s[0]] # 0: 806
-        #         self.scaler.fit(train_data)
-        #         data = self.scaler.transform(data)
-
-        #     data = data[border1:border2]
-
-        #     n_window = (len(data) - self.seq_len - self.output_len) // self.stride + 1
-        #     if n_window < 1: # 不能生成完整序列，跳过数据项
-        #         continue
-
-        #     if start == '' and end == '' and freq == '':
-        #         self.time_gra.append('null')
-        #     else:
-        #         # if freq == '':
-        #         start_pd = pd.to_datetime(start)
-        #         end_pd = pd.to_datetime(end)
-        #         freq = (end_pd - start_pd) / (len(item['target']) - 1)
-        #         freq, gra = get_time_gra(freq)
-        #         self.time_gra.append(gra)
-        #         # else:
-        #         #     # 生成时间序列
-        #         #     time_series = pd.date_range(start=start, end=end, freq=freq)
-        #         #     # print(time_series)
-
-        #         #     # 计算时间间隔（粒度）
-        #         #     freq = time_series[1] - time_series[0]
-        #         #     # print(f"时间粒度: {freq}")
-        #         #     freq, gra = get_time_gra(freq)
-        #         #     self.time_gra.append(gra)
-
-        #     # if len(self.time_gra)==18260:
-        #     #     print()
-        #     if freq == '':
-        #         freq = 'null'
-        #     self.freq_list.append(freq)
-        #     self.data_list.append(data)
-        #     self.n_window_list.append(n_window if len(self.n_window_list) == 0 else self.n_window_list[-1] + n_window) # 累积窗口数量
-
 
     def __getitem__(self, index):
-        # you can wirte your own processing code here
-        # 这里的dataset_index指list中的索引而不是真实数据集
         dataset_index = 0
-        while index >= self.n_window_list[dataset_index]: # 累计窗口大小进行比较，以确定 index 属于哪个子数据集
+        while index >= self.n_window_list[dataset_index]:
             dataset_index += 1
 
         index = index - self.n_window_list[dataset_index - 1] if dataset_index > 0 else index
-        n_timepoint = (len(self.data_list[dataset_index]) - self.seq_len - self.output_len) // self.stride + 1 # 为了确定开始
+        n_timepoint = (len(self.data_list[dataset_index]) - self.seq_len - self.output_len) // self.stride + 1 
 
         s_begin = index % n_timepoint
         s_begin = self.stride * s_begin
@@ -304,8 +236,6 @@ class UTSDataset(Dataset):
 
         if seq_x.size != self.seq_len or seq_y.size != self.output_len:
             print(f"Unexpected size at index {index}: seq_x size = {seq_x.size}, seq_y size = {seq_y.size}")
-
-        # 时间粒度信息[ms,s,min,hour,day]
         # gra = [0,1,0,0,0]
         return seq_x, seq_y, gra
 
