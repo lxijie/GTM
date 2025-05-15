@@ -14,5 +14,3 @@ often require token, pre-training, or model-level customizations for downstream 
 Fourth, extensive experiments show that GTM outperforms state-of-the-art (SOTA) methods across
 all generative tasks, including long-term forecasting, anomaly detection, and imputation. We will
 publicly release the code and models in the camera-ready version.
-
-The pre trained model can be obtained through the following address: (https://huggingface.co/liangxj/GTM)
