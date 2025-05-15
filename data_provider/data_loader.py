@@ -6,11 +6,9 @@ import re
 import torch
 from torch.utils.data import Dataset, DataLoader
 from sklearn.preprocessing import StandardScaler
-from FNOformer.utils.timefeatures import time_features
-# from data_provider.m4 import M4Dataset, M4Meta
-# from data_provider.uea import subsample, interpolate_missing, Normalizer
+from utils.timefeatures import time_features
 import warnings
-from FNOformer.utils.augmentation import run_augmentation_single
+from utils.augmentation import run_augmentation_single
 
 warnings.filterwarnings('ignore')
 
@@ -91,7 +89,6 @@ class Dataset_ETT_hour(Dataset):
         seq_y = self.data_y[r_begin:r_end]
         # seq_x_mark = self.data_stamp[s_begin:s_end]
         # seq_y_mark = self.data_stamp[r_begin:r_end]
-        #时间粒度信息[ms,s,min,hour,day]
         gra = [0,0,0,1,0]
         return seq_x, seq_y,gra
 
@@ -169,9 +166,6 @@ class Dataset_ETT_minute(Dataset):
         self.data_y = data[border1:border2]
         self.data_stamp = data_stamp
 
-        # if self.set_type == 0 and self.args.augmentation_ratio > 0:
-        #     self.data_x, self.data_y, augmentation_tags = run_augmentation_single(self.data_x, self.data_y, self.args)
-
     def __getitem__(self, index):
         s_begin = index*1
         s_end = s_begin + self.seq_len
@@ -182,7 +176,6 @@ class Dataset_ETT_minute(Dataset):
         seq_y = self.data_y[r_begin:r_end]
         # seq_x_mark = self.data_stamp[s_begin:s_end]
         # seq_y_mark = self.data_stamp[r_begin:r_end]
-        #时间粒度信息[ms,s,min,hour,day]
         gra = [0,0,15,0,0]
         return seq_x, seq_y,gra
 
@@ -873,9 +866,6 @@ class SWATSegLoader(Dataset):
         elif (self.flag == 'val'):
             return np.float32(self.val[index:index + self.win_size]), np.float32(
                 self.test_labels[0:self.win_size]), time_gra
-        # elif (self.flag == 'test'):
-        #     return np.float32(self.test[index:index + self.win_size]), np.float32(
-        #         self.test_labels[index:index + self.win_size],time_gra)
         elif (self.flag == 'test'):
             return np.float32(self.test[
                               index // self.step * self.win_size:index // self.step * self.win_size + self.win_size]), np.float32(
