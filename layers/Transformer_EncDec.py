@@ -83,20 +83,17 @@ class Lora_linear(nn.Module):
         super().__init__()
         self.alpha = alpha
         self.r = r
-        # 将复数参数分解为实部和虚部
-        self.A_real = nn.Parameter(torch.randn(r, d_model), requires_grad=True)  # 实部
-        self.A_imag = nn.Parameter(torch.randn(r, d_model), requires_grad=True)  # 虚部
-        self.B_real = nn.Parameter(torch.zeros(d_model, r), requires_grad=True)  # 实部
-        self.B_imag = nn.Parameter(torch.zeros(d_model, r), requires_grad=True)  # 虚部
+        self.A_real = nn.Parameter(torch.randn(r, d_model), requires_grad=True)  
+        self.A_imag = nn.Parameter(torch.randn(r, d_model), requires_grad=True)  
+        self.B_real = nn.Parameter(torch.zeros(d_model, r), requires_grad=True)  
+        self.B_imag = nn.Parameter(torch.zeros(d_model, r), requires_grad=True)  
         # self.real = nn.Parameter(torch.zeros(d_model, d_model), requires_grad=True)
         # self.imag = nn.Parameter(torch.zeros(d_model, d_model), requires_grad=True)
     def forward(self, x):
-        # 组合实部和虚部为复数形式
-        A = self.A_real + 1j * self.A_imag  # 复数 A
-        B = self.B_real + 1j * self.B_imag  # 复数 B
+        A = self.A_real + 1j * self.A_imag  
+        B = self.B_real + 1j * self.B_imag  
         # complex_parm = self.real+1j*self.imag
-        # 计算输出
-        result = x @ (B @ A) * (self.alpha / self.r)  # 这里仍然是使用复数相乘
+        result = x @ (B @ A) * (self.alpha / self.r)
         # result = x@complex_parm
         return result
 class AdaptiveFourierNeuralOperator(nn.Module):
@@ -114,18 +111,18 @@ class AdaptiveFourierNeuralOperator(nn.Module):
         # self.feature_linear_1 = torch.nn.Linear(self.hidden_size//2+1,self.hidden_size//2+1).to(torch.cfloat)
         # self.feature_linear_2 = torch.nn.Linear(self.hidden_size // 2 + 1, self.hidden_size // 2 + 1).to(torch.cfloat)
         self.gra_linear_1 = nn.ModuleList([
-            Lora_linear(4, 1, dim // 2 + 1),  # 对应 'ms'
-            Lora_linear(4, 1, dim // 2 + 1),  # 对应 's'
-            Lora_linear(4, 1, dim // 2 + 1),  # 对应 'minute'
-            Lora_linear(4, 1, dim // 2 + 1),  # 对应 'hour'
-            Lora_linear(4, 1, dim // 2 + 1)  # 对应 'day'
+            Lora_linear(4, 1, dim // 2 + 1), 
+            Lora_linear(4, 1, dim // 2 + 1),  
+            Lora_linear(4, 1, dim // 2 + 1),  
+            Lora_linear(4, 1, dim // 2 + 1),  
+            Lora_linear(4, 1, dim // 2 + 1) 
         ])
         self.gra_linear_2 = nn.ModuleList([
-            Lora_linear(4, 1, dim // 2 + 1),  # 对应 'ms'
-            Lora_linear(4, 1, dim // 2 + 1),  # 对应 's'
-            Lora_linear(4, 1, dim // 2 + 1),  # 对应 'minute'
-            Lora_linear(4, 1, dim // 2 + 1),  # 对应 'hour'
-            Lora_linear(4, 1, dim // 2 + 1)  # 对应 'day'
+            Lora_linear(4, 1, dim // 2 + 1), 
+            Lora_linear(4, 1, dim // 2 + 1), 
+            Lora_linear(4, 1, dim // 2 + 1), 
+            Lora_linear(4, 1, dim // 2 + 1), 
+            Lora_linear(4, 1, dim // 2 + 1)
         ])
         self.gra_embedding = nn.Linear(5,self.hidden_size//2+1)
         self.gra_feature =  torch.nn.Parameter(torch.randn(5,self.hidden_size//2+1))
@@ -167,7 +164,6 @@ class AdaptiveFourierNeuralOperator(nn.Module):
             gra_atten = gra_atten.unsqueeze(-2).repeat(1,1,x.size(1),1)
         else:
             gra_atten = gra_atten.unsqueeze(-2).repeat(1, self.args.enc_in, x.size(1), 1)
-        # 第一专层家混合
         moe_out_1 = self.gra_linear_1[0](gra_atten[0]*x)
         for i in range(1,len(self.gra_linear_1)):
             moe_out_1+=self.gra_linear_1[i](gra_atten[i]*x)
@@ -180,7 +176,6 @@ class AdaptiveFourierNeuralOperator(nn.Module):
         x = torch.stack([x_real_1, x_imag_1], dim=-1).float()
         x = torch.view_as_complex(x)
         x = x + moe_out_1
-        #第二层专家混合
         moe_out_2 = self.gra_linear_2[0](gra_atten[0]*x)
         for i in range(1,len(self.gra_linear_2)):
             moe_out_2+=self.gra_linear_2[i](gra_atten[i]*x)
